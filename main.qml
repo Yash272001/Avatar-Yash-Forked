@@ -9,7 +9,7 @@ ApplicationWindow {
     property bool isRandomForestSelected: false
     visible: true
     width: 1200
-    height: 800 
+    height: 800
     title: "Avatar - Brainwave Reading"
 
     // Proper connection handling
@@ -87,56 +87,74 @@ ApplicationWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    spacing: 20
+                Row {
+                    anchors.fill: parent
+                    spacing: width * 0.02
 
                     // Left Column (Components)
-                    ColumnLayout {
-                        Layout.preferredWidth: 600
-                        Layout.fillHeight: true
-                        spacing: 10
+                    Column {
+                        width: parent.width * 0.5
+                        height: parent.height
+                        spacing: height * 0.02
+                        anchors.left: parent.left
 
                         // Control Mode
-                        RowLayout {
-                            Layout.alignment: Qt.AlignHCenter
-                            spacing: 10
+                        Row {
+                            width: parent.width * 0.4
+                            spacing: parent.width * 0.02
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            Layout.alignment: Qt.AlignJustify // Ensures space between items
+
                             RadioButton {
+                                id: manualControl
                                 text: "Manual Control"
                                 checked: true
-                                font.bold: true
+                                font.pixelSize:  parent.width * 0.05 // Larger font size
+
+                                contentItem: Text {
+                                    text: manualControl.text
+                                    color: "white"
+                                    font.pixelSize: manualControl.font.pixelSize
+                                    font.bold: true
+                                    verticalAlignment: Text.AlignVCenter
+                                    leftPadding: manualControl.indicator.width + manualControl.spacing
+                                }
                             }
                             RadioButton {
+                                id: autopilot
                                 text: "Autopilot"
-                                font.bold: true
+                                font.pixelSize:  parent.width * 0.05 // Larger font size
+                                contentItem: Text {
+                                    text: autopilot.text
+                                    color: "white"
+                                    font.pixelSize: autopilot.font.pixelSize
+                                    font.bold: true
+                                    verticalAlignment: Text.AlignVCenter
+                                    leftPadding: autopilot.indicator.width + autopilot.spacing
+                                }
                             }
                         }
 
                         // Brainwave Image with Transparent Button
                         Rectangle {
-                            width: 150
-                            height: 150
+                            width: parent.width * 0.25
+                            height: parent.height * 0.2
                             color: "#242c4d" // Dark blue background
-                            Layout.alignment: Qt.AlignHCenter
+                            anchors.horizontalCenter: parent.horizontalCenter
 
                             Image {
                                 source: "GUI_Pics/brain.png"
-                                width: 130
-                                height: 130
-                                anchors.centerIn: parent
+                                anchors.fill: parent
                                 fillMode: Image.PreserveAspectFit
                             }
 
                             Button {
-                                width: 130
-                                height: 130
-                                anchors.centerIn: parent
+                                anchors.fill: parent
                                 background: Item {} // No background
                                 contentItem: Text {
                                     text: "Read my mind..."
-                                    font.bold: true
-                                    color: "white" // Set text color to white
+                                    font.pixelSize:parent.width * 0.1 // Larger font size
+                                    color: "white"
                                     anchors.centerIn: parent
                                 }
                                 onClicked: backend.readMyMind()
@@ -147,43 +165,46 @@ ApplicationWindow {
                         Label {
                             text: "The model says ..."
                             color: "white"
-                            font.bold: true
-                            Layout.alignment: Qt.AlignHCenter
+                            font.pixelSize: parent.width * 0.03 // Larger font size
+                            anchors.horizontalCenter: parent.horizontalCenter
                         }
 
                         GroupBox {
-                            Layout.preferredWidth: 300
-                            Layout.preferredHeight: 80
-                            Layout.alignment: Qt.AlignHCenter
-
+                            width: parent.width * 0.4
+                            height: parent.height * 0.15
+                            anchors.horizontalCenter: parent.horizontalCenter
                             // Header with white background
-                            RowLayout {
-                                spacing: 1
-                                Rectangle {
-                                    color: "white"
-                                    width: 145
-                                    height: 20
-                                    Text {
-                                        text: "Count"
-                                        font.bold: true
-                                        color: "black"
-                                        anchors.centerIn: parent
-                                    }
+                            Row {
+                                width: parent.width
+                                height: parent.height * 0.28 // Adjust height as needed
+                                spacing: parent.width * 0.01 // Add spacing between items
+                                        Rectangle {
+                                            color: "white"
+                                            width: parent.width * 0.5
+                                            height: parent.height
+                                            Text {
+                                                text: "Count"
+                                                font.bold: true
+                                                font.pixelSize: parent.width * 0.09 // Ensure a minimum font size
+                                                color: "black"
+                                                anchors.centerIn: parent
+                                            }
+                                        }
+                                        Rectangle {
+                                            color: "white"
+                                            width: parent.width * 0.5
+                                            height: parent.height
+                                            Text {
+                                                text: "Label"
+                                                font.bold: true
+                                                font.pixelSize: parent.width * 0.09 // Ensure a minimum font size
+                                                color: "black"
+                                                anchors.centerIn: parent
+                                            }
+                                        }
                                 }
-                                Rectangle {
-                                    color: "white"
-                                    width: 145
-                                    height: 20
-                                    Text {
-                                        text: "Label"
-                                        font.bold: true
-                                        color: "black"
-                                        anchors.centerIn: parent
-                                    }
-                                }
-                            }
 
-                            ListView {
+                                    ListView {
                                 id: predictionListView
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
@@ -195,53 +216,79 @@ ApplicationWindow {
                                 }
                             }
                         }
-
                         // Action Buttons
-                        RowLayout {
-                            spacing: 10
-                            Layout.alignment: Qt.AlignHCenter
+                        Row {
+                            width: parent.width * 0.6
+                            height: parent.height * 0.08
+                            spacing: parent.width * 0.02
+                            anchors.horizontalCenter: parent.horizontalCenter
                             Button {
+                                id: notThinking
                                 text: "Not what I was thinking..."
-                                font.bold: true
-                                Layout.preferredWidth: 160
-                                Layout.preferredHeight: 80
+                                font.pixelSize:  parent.width * 0.03 // Larger font size
+                                width: parent.width * 0.5
+                                height: parent.height
                                 background: Rectangle {
                                     color: "#242c4d"
-                                } 
+                                }
+                                contentItem: Text {
+                                    text: notThinking.text
+                                    color: "white"
+                                    font.pixelSize: notThinking.font.pixelSize
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    elide: Text.ElideRight
+                                }
                                 onClicked: backend.notWhatIWasThinking(manualInput.text)
                             }
                             Button {
+                                id: executeBtn
                                 text: "Execute"
-                                font.bold: true; 
-                                Layout.preferredWidth: 160
-                                Layout.preferredHeight: 80
+                                font.pixelSize:  parent.width * 0.03 // Larger font size
+                                width: parent.width * 0.5
+                                height: parent.height
                                 background: Rectangle {
                                     color: "#242c4d"
-                                } 
+                                }
+                                contentItem: Text {
+                                    text: executeBtn.text
+                                    color: "white"
+                                    font.pixelSize: executeBtn.font.pixelSize
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    elide: Text.ElideRight
+                                }
                                 onClicked: backend.executeAction()
                             }
                         }
 
                         // Manual Input and Keep Alive
-                        GridLayout {
-                            columns: 2
-                            columnSpacing: 10
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignHCenter
+                        Row {
+                            width: parent.width *.8
+                            height: parent.height * 0.03
+                            spacing: parent.width * 0.01
+                            anchors.horizontalCenter: parent.horizontalCenter
                             TextField {
                                 id: manualInput
                                 placeholderText: "Manual Command"
-                                font.bold: true
-                                Layout.preferredWidth: 400
-                                Layout.alignment: Qt.AlignHCenter
+                                font.pixelSize:  parent.width * 0.03 // Larger font size
+                                width: parent.width * 0.6
+                                height: parent.height
                             }
                             Button {
-                                text: "Keep Drone Alive"
-                                font.bold: true
-                                width: 130
-                                height: 40
+                                width: parent.width * 0.3
+                                height: parent.height
                                 background: Rectangle {
                                     color: "#242c4d"
+                                }
+
+                                contentItem: Text {
+                                    text: qsTr("Keep Drone Alive")
+                                    color: "white"
+                                    font.pixelSize: parent.height * 0.5
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    anchors.fill: parent
                                 }
                                 onClicked: backend.keepDroneAlive()
                             }
@@ -250,68 +297,77 @@ ApplicationWindow {
                         // Flight Log
                         GroupBox {
                             title: "Flight Log"
-                            Layout.preferredWidth: 230
-                            Layout.preferredHeight: 170
-                            ListView {
-                                id: flightLogView
-                                Layout.preferredWidth: 230
-                                Layout.preferredHeight: 170
-                                model: ListModel {}
-                                delegate: Text {
-                                    text: log
-                                    color: "white"
-                                    font.bold: true
+                            width: parent.width * 0.5
+                            height: parent.height * 0.2
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            label: Text { text: qsTr("Flight Log"); font.bold: true ; color: "white" }
+
+                            Rectangle {
+                                anchors.fill: parent
+                                color: "white"
+                                ListView {
+                                    id: flightLogView
+                                    anchors.fill: parent
+                                    model: ListModel {}
+                                    delegate: Text {
+                                        text: log
+                                        font.pixelSize:  parent.width * 0.03
+                                        font.bold: true
+                                        color: "white"
+                                    }
                                 }
                             }
                         }
 
                         // Connect Image with Transparent Button
-                        RowLayout {
-                            Layout.alignment: Qt.AlignHCenter
-                            spacing: 20
+                        Row {
+                            width: parent.width
+                            height: parent.height * 0.3
+                            spacing: width * 0.02
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            // Connect Button with Image
                             Rectangle {
-                                width: 150
-                                height: 150
+                                width: parent.width * 0.2
+                                height: parent.height * 0.5
                                 color: "#242c4d" // Dark blue background
 
                                 Image {
                                     source: "GUI_Pics/connect.png"
-                                    width: 80
-                                    height: 80
-                                    anchors.centerIn: parent
+                                    anchors.fill: parent
                                     fillMode: Image.PreserveAspectFit
                                 }
 
                                 Button {
-                                    width: 80
-                                    height: 80
-                                    anchors.centerIn: parent
+                                    anchors.fill: parent
                                     background: Item {} // No background
                                     contentItem: Text {
                                         text: "Connect"
+                                        font.pixelSize: parent.width * 0.1 // Larger font size
                                         font.bold: true
-                                        color: "white" // Set text color to white
+                                        color: "white"
                                         anchors.centerIn: parent
                                     }
                                     onClicked: backend.connectDrone()
                                 }
                             }
-                            ColumnLayout {
-                                spacing: 5
-                                Layout.alignment: Qt.AlignHCenter
-                                
 
-                                // Green Box with Text
+                            // Random Forest and Deep Learning Buttons
+                            Row {
+                                width: parent.width * 0.5
+                                height: parent.height * 0.3
+                                spacing: height * 0.1
+
+                                // Random Forest Button
                                 Rectangle {
-                                    width: 150
-                                    height: 80
+                                    width: parent.width * 0.5
+                                    height: parent.height
                                     color: "#6eb109"
                                     radius: 5
 
                                     Text {
                                         text: "Random Forest"
+                                        font.pixelSize: parent.width * 0.08 // Larger font size
                                         font.bold: true
-                                        font.pixelSize: 16
                                         color: isRandomForestSelected ? "yellow" : "white"
                                         anchors.centerIn: parent
                                     }
@@ -324,25 +380,20 @@ ApplicationWindow {
                                         }
                                     }
                                 }
-                            }
-                            ColumnLayout {
-                                spacing: 5
-                                Layout.alignment: Qt.AlignHCenter
 
-                                
-                                // Green Box with Text
+                                // Deep Learning Button
                                 Rectangle {
-                                    width: 150
-                                    height: 80
+                                    width: parent.width * 0.5
+                                    height: parent.height
                                     color: "#6eb109"
                                     radius: 5
 
                                     Text {
                                         text: "Deep Learning"
-                                        font.pixelSize: 16
+                                        font.pixelSize: parent.width * 0.08 // Larger font size
+                                        font.bold: true
                                         color: !isRandomForestSelected ? "yellow" : "white"
                                         anchors.centerIn: parent
-                                        font.bold: true
                                     }
 
                                     MouseArea {
@@ -352,17 +403,28 @@ ApplicationWindow {
                                             backend.selectModel("Deep Learning");
                                         }
                                     }
-                                }                                
+                                }
                             }
-                            // Adding Synthetic Data and Live Data Radio Button (Row 344 to 364) as part of Ticket 186
+                            // Synthetic Data and Live Data Radio Buttons
                             Column {
-                                spacing: 10
+                                width: parent.width * 0.2
+                                height: parent.height
+                                spacing: height * 0.01
 
                                 RadioButton {
                                     id: syntheticRadio
                                     text: "Synthetic Data"
+                                        font.pixelSize: parent.width * 0.1 // Larger font size
                                     font.bold: true
                                     checked: false
+                                    contentItem: Text {
+                                        text: syntheticRadio.text
+                                        color: "white"
+                                        font.pixelSize: syntheticRadio.font.pixelSize
+                                        font.bold: syntheticRadio.font.bold
+                                        verticalAlignment: Text.AlignVCenter
+                                        leftPadding: syntheticRadio.indicator.width + syntheticRadio.spacing
+                                    }
                                     onClicked: {
                                         backend.setDataMode("synthetic")
                                     }
@@ -371,8 +433,17 @@ ApplicationWindow {
                                 RadioButton {
                                     id: liveRadio
                                     text: "Live Data"
+                                        font.pixelSize: parent.width * 0.1 // Larger font size
                                     font.bold: true
                                     checked: true
+                                    contentItem: Text {
+                                        text: liveRadio.text
+                                        color: "white"
+                                        font.pixelSize: liveRadio.font.pixelSize
+                                        font.bold: liveRadio.font.bold
+                                        verticalAlignment: Text.AlignVCenter
+                                        leftPadding: liveRadio.indicator.width + liveRadio.spacing
+                                    }
                                     onClicked: {
                                         backend.setDataMode("live")
                                     }
@@ -382,90 +453,117 @@ ApplicationWindow {
                     }
 
                     // Right Column (Prediction Table and Console Log)
-                    ColumnLayout {
-                        Layout.preferredWidth: 700
-                        Layout.fillHeight: true
-                        spacing: 10
+                    Column {
+                        width: parent.width * 0.45
+                        height: parent.height
+                        spacing: parent.height * 0.02
+                            anchors.right: parent.right
 
-                        // Predictions Table
-                        GroupBox {
-                            title: "Predictions Table"
-                            Layout.preferredWidth: 700
-                            Layout.preferredHeight: 550
+                    // Predictions Table
+                                    GroupBox {
+                                        title: "Predictions Table"
+                                        width: parent.width * 0.8
+                                        height: parent.height * 0.4
 
-                            // Header with white background
-                            RowLayout {
-                                spacing: 1
-                                Rectangle {
-                                    color: "white"
-                                    width: 230
-                                    height: 20
-                                    Text {
-                                        text: "Predictions Count"
-                                        font.bold: true
-                                        color: "black"
-                                        anchors.centerIn: parent
+                                        label: Text {
+                                            text: qsTr("Predictions Table")
+                                            color: "white"
+                                            font.pixelSize: parent.width * 0.03
+                                            font.bold: true
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: 10    // preserves default left spacing
+                                            anchors.top: parent.top
+                                            anchors.topMargin: 5      // preserves default top spacing
+                                        }
+
+
+                                        // Header with white background
+                                    Row {
+                                        width: parent.width
+                                        height: parent.height * 0.1 // Adjust height as needed
+                                        spacing: parent.width * 0.001 // Add spacing between items
+                                        Rectangle {
+                                            color: "white"
+                                            width: parent.width * 0.33
+                                            height: parent.height
+                                            Text {
+                                                text: "Predictions Count"
+                                                font.bold: true
+                                                font.pixelSize: parent.width * 0.09 // Ensure a minimum font size
+                                                color: "black"
+                                                anchors.centerIn: parent
+                                            }
+                                        }
+                                        Rectangle {
+                                            color: "white"
+                                            width: parent.width * 0.33
+                                            height: parent.height
+                                            Text {
+                                                text: "Server Predictions"
+                                                font.bold: true
+                                                font.pixelSize: parent.width * 0.09 // Ensure a minimum font size
+                                                color: "black"
+                                                anchors.centerIn: parent
+                                            }
+                                        }
+                                        Rectangle {
+                                            color: "white"
+                                            width: parent.width * 0.33 // Make this responsive
+                                            height: parent.height
+                                            Text {
+                                                text: "Prediction Label"
+                                                font.bold: true
+                                                font.pixelSize: parent.width * 0.09 // Ensure a minimum font size
+                                                color: "black"
+                                                anchors.centerIn: parent
+                                            }
+                                        }
+                                    }
+
+                                    ListView {
+                                        Layout.preferredWidth: 700
+                                        Layout.preferredHeight: 550
+                                        model: ListModel {
+                                            ListElement { count: "1"; server: "Prediction A"; label: "Label A" }
+                                            ListElement { count: "2"; server: "Prediction B"; label: "Label B" }
+                                        }
+
+                                        delegate: Rectangle {
+                                            width: parent.width
+                                            height: 40
+                                            color: "white"
+
+                                            RowLayout {
+                                                anchors.fill: parent
+                                                spacing: 50
+                                                Text { text: model.count; font.bold: true; color: "black"; width: 120 }
+                                                Text { text: model.server; font.bold: true; color: "black"; width: 200 }
+                                                Text { text: model.label; font.bold: true; color: "black"; width: 120 }
+                                            }
+                                        }
                                     }
                                 }
-                                Rectangle {
-                                    color: "white"
-                                    width: 230
-                                    height: 20
-                                    Text {
-                                        text: "Server Predictions"
-                                        font.bold: true
-                                        color: "black"
-                                        anchors.centerIn: parent
-                                    }
-                                }
-                                Rectangle {
-                                    color: "white"
-                                    width: 230
-                                    height: 20
-                                    Text {
-                                        text: "Prediction Label"
-                                        font.bold: true
-                                        color: "black"
-                                        anchors.centerIn: parent
-                                    }
-                                }
-                            }
-
-                            ListView {
-                                Layout.preferredWidth: 700
-                                Layout.preferredHeight: 550
-                                model: ListModel {
-                                    ListElement { count: "1"; server: "Prediction A"; label: "Label A" }
-                                    ListElement { count: "2"; server: "Prediction B"; label: "Label B" }
-                                }
-                                delegate: RowLayout {
-                                    spacing: 50
-                                    Text { text: model.count; font.bold: true; color: "white"; width: 120 }
-                                    Text { text: model.server; font.bold: true; color: "white"; width: 200 }
-                                    Text { text: model.label; font.bold: true; color: "white"; width: 120 }
-                                }
-                            }
-                        }
 
                         // Console Log Section
                         GroupBox {
                             title: "Console Log"
-                            Layout.preferredWidth: 300
-                            Layout.preferredHeight: 250
-                            Layout.alignment: Qt.AlignRight
+                            width: parent.width * 0.6
+                            height: parent.height * 0.3
+                            label: Text { text: qsTr("Console Log"); font.bold: true; color: "white" }
 
                             TextArea {
                                 id: consoleLog
-                                Layout.fillWidth: true
-                                Layout.fillHeight: true
+                                anchors.fill: parent
                                 text: "Console output here..."
-                                font.bold: true
+                                font.pixelSize:  parent.width * 0.03
+                                background: Rectangle {
+                                    color: "white"
+                                }
                             }
                         }
                     }
                 }
             }
-
             // Brainwave Visualization
             Rectangle {
                 color: "#64778d"
@@ -486,7 +584,7 @@ ApplicationWindow {
                         rowSpacing: 10
 
                         Repeater {
-                            model: imageModel  
+                            model: imageModel
                             delegate: Rectangle {
                                 color: "#e6e6f0"
                                 Layout.fillWidth: true
@@ -514,7 +612,7 @@ ApplicationWindow {
                                             color: "white"
                                             font.bold: true
                                             font.pixelSize: 14
-                                            
+
                                             // Center text using calculations rather than anchors
                                             x: (parent.width - width) / 2
                                             y: (parent.height - height) / 2
@@ -539,39 +637,39 @@ ApplicationWindow {
                             }
                         }
                     }
-                    
+
                     // Refresh and Rollback buttons after graphs
                     RowLayout {
                         Layout.alignment: Qt.AlignHCenter | Qt.AlignBottom
                         Layout.bottomMargin: 20
                         spacing: 15
-                        
+
                         // Refresh Button
                         Button {
                             text: "Refresh"
                             font.bold: true
                             implicitWidth: 120
                             implicitHeight: 40
-                            
+
                             // This property allows us to track the hover state
                             property bool isHovering: false
-                            
+
                             // Define the hover handler
                             HoverHandler {
                                 onHoveredChanged: parent.isHovering = hovered
                             }
-                            
+
                             background: Rectangle {
                                 // Use the isHovering property to change color
                                 color: parent.isHovering ? "#3e4e7a" : "#2e3a5c"
                                 radius: 4
-                                
+
                                 // Add a smooth color transition
                                 Behavior on color {
                                     ColorAnimation { duration: 150 }
                                 }
                             }
-                            
+
                             contentItem: Text {
                                 text: parent.text
                                 font.pixelSize: 14
@@ -580,38 +678,38 @@ ApplicationWindow {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
-                            
+
                             onClicked: {
                                 backend.setDataset("refresh")
                             }
                         }
-                        
+
                         // Rollback Button
                         Button {
                             text: "Rollback"
                             font.bold: true
                             implicitWidth: 120
                             implicitHeight: 40
-                            
+
                             // This property allows us to track the hover state
                             property bool isHovering: false
-                            
+
                             // Define the hover handler
                             HoverHandler {
                                 onHoveredChanged: parent.isHovering = hovered
                             }
-                            
+
                             background: Rectangle {
                                 // Use the isHovering property to change color
                                 color: parent.isHovering ? "#3e4e7a" : "#2e3a5c"
                                 radius: 4
-                                
+
                                 // Add a smooth color transition
                                 Behavior on color {
                                     ColorAnimation { duration: 150 }
                                 }
                             }
-                            
+
                             contentItem: Text {
                                 text: parent.text
                                 font.pixelSize: 14
@@ -620,62 +718,55 @@ ApplicationWindow {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                             }
-                            
+
                             onClicked: {
                                 // Display rollback plots
                                 backend.setDataset("rollback")
                             }
                         }
                     }
-                }    
+                }
             }
             // Manual Drone Control view
-        Rectangle{
-            color: "#64778d"
-            ColumnLayout {
-                anchors.fill: parent
-                spacing: 10
+            Rectangle {
+                color: "#64778d"
+                Column {
+                    anchors.fill: parent
+                      spacing: parent.height * 0.1 // Adjust spacing for layout elements
 
                 // Top Row - Home, Up, Flight Log
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 150 // Larger height for the buttons
-
-
+                Row {
+                   width: parent.width
+                    height: parent.height * 0.19
+                    anchors.top: parent.top
+                    anchors.topMargin: parent.height * 0.0
+                    spacing: parent.width * 0.1
                     // Home Button
-                    Button {
-                        Layout.preferredWidth: 150 // Set larger width for Home button
-                        Layout.preferredHeight: 150 // Set height for Home button
+                    Rectangle {
+                        width: parent.width * 0.15
+                        height: parent.height
+                        anchors.left: parent.left
+                        color: "#242c4d"
+                        border.color: "black"
 
-                        // Define the custom background
-                        background: Rectangle {
-                            id: buttonBackground // Give an ID to reference
-                            color: "#242c4d" // Initial background color
-                            border.color: "black" // Border color
+                        Image {
+                            source: "GUI_Pics/home.png"
+                            width: 150
+                            height: 150
+                            anchors.centerIn: parent
                         }
 
-                        // Stack Image and Text on top of each other and center them
-                        contentItem: Item {
-                            anchors.fill: parent
+                        Text {
+                            text: "Home"
+                            font.bold: true
+                            color: "white"
+                            font.pixelSize: Math.max(12, parent.width * 0.05)
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 10
+                        }
 
-                            Image {
-                                source: "GUI_Pics/home.png"
-                                width: 150
-                                height: 150
-                                anchors.centerIn: parent
-                            }
-
-                            Text {
-                                id: buttonText // Give an ID to reference
-                                text: "Home"
-                                font.bold: true
-                                color: "white" // Initial text color
-                                font.pixelSize: 18
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-
-                            MouseArea {
+                         MouseArea {
                                 anchors.fill: parent
                                 onEntered: {
                                     buttonBackground.color = "white"; // Change background to white on hover
@@ -690,496 +781,346 @@ ApplicationWindow {
                                 }
                             }
                         }
-                    }
 
-                    RowLayout {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 150
+                    // Up Button
+                    Rectangle {
+                        width: parent.width * 0.6
+                        height: parent.height
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        color: "#242c4d"
+                        border.color: "black"
 
-                        // Up Button
-                        Button {
-                            Layout.preferredWidth: 1000
-                            Layout.preferredHeight: 150
-
-                            // Define the custom background
-                            background: Rectangle {
-                                id: upButtonBackground // Unique ID for the Up button background
-                                color: "#242c4d" // Initial background color
-                                border.color: "black" // Border color
-                            }
-
-                            // Stack Image and Text on top of each other and center them
-                            contentItem: Item {
-                                anchors.fill: parent
-
-                                Image {
-                                    source: "GUI_Pics/up.png"
-                                    width: 150
-                                    height: 150
-                                    anchors.centerIn: parent
-                                }
-
-                                Text {
-                                    id: upButtonText // Unique ID for the Up button text
-                                    text: "Up"
-                                    color: "white" // Initial text color
-                                    font.pixelSize: 18
-                                    font.bold: true
-                                    anchors.horizontalCenter: parent.horizontalCenter
-                                    anchors.verticalCenter: parent.verticalCenter
-                                }
-
-                                MouseArea {
-                                    anchors.fill: parent
-                                    onEntered: {
-                                        upButtonBackground.color = "white"; // Change background to white on hover
-                                        upButtonText.color = "black"; // Change text color to black on hover
-                                    }
-                                    onExited: {
-                                        upButtonBackground.color = "#242c4d"; // Revert background color on exit
-                                        upButtonText.color = "white"; // Revert text color to white on exit
-                                    }
-                                    onClicked: {
-                                        backend.getDroneAction("up");
-                                    }
-                                }
-                            }
+                        Image {
+                            source: "GUI_Pics/up.png"
+                            width: 150
+                            height: 150
+                            anchors.centerIn: parent
                         }
-                        // Flight Log Label and Space beside Up Button
-                        ColumnLayout {
-                            spacing: 5
 
-                            // Flight Log Label
-                            Text {
-                                id: flightlog
-                                text: "Flight Log"
-                                font.bold: true
-                                font.pixelSize: 20
-                                color: "white"
+                        Text {
+                            text: "Up"
+                            font.bold: true
+                            color: "white"
+                            font.pixelSize: Math.max(12, parent.width * 0.01)
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 10
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onEntered: {
+                                upButtonBackground.color = "white"; // Change background to white on hover
+                                upButtonText.color = "black"; // Change text color to black on hover
                             }
-
-                            // Flight Log TextArea (Box)
-                            Rectangle {
-                                width: 250
-                                height: 100
-                                color: "white"
-                                border.color: "#2E4053"
-                                anchors.leftMargin: 20
-
-                                TextArea {
-                                    id: flightLogSpace
-                                    width: 400 // Adjust to account for scrollbar width
-                                    height: 100
-                                    // Ensure vertical scrollbar is always on
-
-                                    ScrollBar {
-                                        id: flightLogScrollBar
-                                        orientation: Qt.Vertical
-                                        anchors.right: parent.right
-                                        anchors.top: parent.top
-                                        anchors.bottom: parent.bottom
-                                        width: 20 // Set width for the scrollbar
-                                    }
-                                }
+                            onExited: {
+                                upButtonBackground.color = "#242c4d"; // Revert background color on exit
+                                upButtonText.color = "white"; // Revert text color to white on exit
+                            }
+                            onClicked: {
+                                backend.getDroneAction("up");
                             }
                         }
                     }
 
-                    // // Log ListView
-                    // ListView {
-                    //     Layout.fillWidth: true
-                    //     Layout.preferredHeight: 150
-                    //     model: ListModel {
-                    //                 ListElement { count: "1"; server: "Log A"; label: "Label A" }
-                    //                 ListElement { count: "2"; server: "Log B"; label: "Label B" }
-                    //             }
-                    //     delegate: Item {
-                    //         Text {
-                    //             text: modelData
-                    //         }
-                    //     }
-                    // }
+                    // Flight Log
+                    Rectangle {
+                        width: parent.width * 0.2
+                        height: parent.height
+                        anchors.right: parent.right
+                        color: "white"
+                        border.color: "#2E4053"
+
+                        Text {
+                            text: "Flight Log"
+                            font.bold: true
+                            font.pixelSize: Math.max(12, parent.width * 0.05)
+                            color: "black"
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.top: parent.top
+                            anchors.topMargin: 10
+                        }
+
+                        TextArea {
+                            anchors.fill: parent
+                            anchors.topMargin: 30
+                            font.pixelSize: Math.max(10, parent.width * 0.03)
+                            color: "black"
+                        }
+                    }
                 }
 
                 // Forward Button
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 150
+                Rectangle {
+                    width: parent.width
+                    height: parent.height * 0.19
+                    anchors.top: parent.top
+                    anchors.topMargin: parent.height * 0.20
+                    color: "transparent"
 
-                    // Forward Button
-                    Button {
-                        Layout.preferredWidth: 1400
-                        Layout.preferredHeight: 150
+                    Rectangle {
+                        width: parent.width
+                        height: parent.height
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        color: "#242c4d"
+                        border.color: "black"
 
-                        // Define the custom background
-                        background: Rectangle {
-                            id: forwardBackground // Unique ID for the Forward button background
-                            color: "#242c4d" // Initial background color
-                            border.color: "black" // Border color
+                        Image {
+                            source: "GUI_Pics/Forward.png"
+                            width: 150
+                            height: 150
+                            anchors.centerIn: parent
                         }
 
-                        // Stack Image and Text on top of each other and center them
-                        contentItem: Item {
+                        Text {
+                            text: "Forward"
+                            font.bold: true
+                            color: "white"
+                            font.pixelSize:  parent.width * 0.01
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 10
+                        }
+
+                        MouseArea {
                             anchors.fill: parent
-
-                            Image {
-                                source: "GUI_Pics/Forward.png"
-                                width: 150
-                                height: 150
-                                anchors.centerIn: parent
-                            }
-
-                            Text {
-                                id: forwardText // Unique ID for the Forward button text
-                                text: "Forward"
-                                color: "white" // Initial text color
-                                font.bold: true
-                                font.pixelSize: 18
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                onEntered: {
-                                    forwardBackground.color = "white"; // Change background to white on hover
-                                    forwardText.color = "black"; // Change text color to black on hover
-                                }
-                                onExited: {
-                                    forwardBackground.color = "#242c4d"; // Revert background color on exit
-                                    forwardText.color = "white"; // Revert text color to white on exit
-                                }
-                                onClicked: backend.getDroneAction("forward")
-                            }
+                            onEntered: parent.color = "white"
+                            onExited: parent.color = "#242c4d"
+                            onClicked: backend.getDroneAction("forward")
                         }
                     }
                 }
-                // Turn Left, Left, Stream, Right, Turn Right
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 150
 
-                    Button {
-                        Layout.preferredWidth: 280
-                        Layout.preferredHeight: 150
+                 // Directional Buttons (Turn Left, Left, Stream, Right, Turn Right)
+                Row {
+                    width: parent.width
+                    height: parent.height * 0.18
+                    anchors.top: parent.top
+                    anchors.topMargin: parent.height * 0.4
+                    spacing: width * 0.065 // Add spacing between buttons
 
-                        // Define the custom background
-                        background: Rectangle {
-                            id: turnLeftBackground // Unique ID for the Turn Left button background
-                            color: "#242c4d" // Initial background color
-                            border.color: "black" // Border color
+                    // Turn Left Button
+                    Rectangle {
+                        width: parent.width * 0.15
+                        height: parent.height
+                        color: "#242c4d"
+                        border.color: "black"
+
+                        Image {
+                            source: "GUI_Pics/turnLeft.png"
+                            width: 150
+                            height: 150
+                            anchors.centerIn: parent
                         }
 
-                        // Stack Image and Text on top of each other and center them
-                        contentItem: Item {
+                        Text {
+                            text: "Turn Left"
+                            font.bold: true
+                            color: "white"
+                            font.pixelSize: Math.max(12, width * 0.2)
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 10
+                        }
+
+                        MouseArea {
                             anchors.fill: parent
-
-                            Image {
-                                source: "GUI_Pics/turnLeft.png"
-                                width: 150
-                                height: 150
-                                anchors.centerIn: parent
-                            }
-
-                            Text {
-                                id: turnLeftText // Unique ID for the Turn Left button text
-                                text: "Turn Left"
-                                color: "white" // Initial text color
-                                font.bold: true
-                                font.pixelSize: 18
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                onEntered: {
-                                    turnLeftBackground.color = "white"; // Change background to white on hover
-                                    turnLeftText.color = "black"; // Change text color to black on hover
-                                }
-                                onExited: {
-                                    turnLeftBackground.color = "#242c4d"; // Revert background color on exit
-                                    turnLeftText.color = "white"; // Revert text color to white on exit
-                                }
-                                onClicked: {
-                                    backend.getDroneAction("turn_left");
-                                }
-                            }
+                            onEntered: parent.color = "white"
+                            onExited: parent.color = "#242c4d"
+                            onClicked: backend.getDroneAction("turn_left")
                         }
                     }
 
-                    Button {
-                        Layout.preferredWidth: 280
-                        Layout.preferredHeight: 150
+                    // Left Button
+                    Rectangle {
+                        width: parent.width * 0.15
+                        height: parent.height
+                        color: "#242c4d"
+                        border.color: "black"
 
-                        // Define the custom background
-                        background: Rectangle {
-                            id: leftBackground // Unique ID for the Left button background
-                            color: "#242c4d" // Initial background color
-                            border.color: "black" // Border color
+                        Image {
+                            source: "GUI_Pics/left.png"
+                            width: 150
+                            height: 150
+                            anchors.centerIn: parent
                         }
 
-                        // Stack Image and Text on top of each other and center them
-                        contentItem: Item {
+                        Text {
+                            text: "Left"
+                            font.bold: true
+                            color: "white"
+                            font.pixelSize: Math.max(12, width * 0.2)
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 10
+                        }
+
+                        MouseArea {
                             anchors.fill: parent
-
-                            Image {
-                                source: "GUI_Pics/left.png"
-                                width: 150
-                                height: 150
-                                anchors.centerIn: parent
-                            }
-
-                            Text {
-                                id: leftText // Unique ID for the Left button text
-                                text: "Left"
-                                color: "white" // Initial text color
-                                font.bold: true
-                                font.pixelSize: 18
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                onEntered: {
-                                    leftBackground.color = "white"; // Change background to white on hover
-                                    leftText.color = "black"; // Change text color to black on hover
-                                }
-                                onExited: {
-                                    leftBackground.color = "#242c4d"; // Revert background color on exit
-                                    leftText.color = "white"; // Revert text color to white on exit
-                                }
-                                onClicked: {
-                                    backend.getDroneAction("left");
-                                }
-                            }
+                            onEntered: parent.color = "white"
+                            onExited: parent.color = "#242c4d"
+                            onClicked: backend.getDroneAction("left")
                         }
                     }
 
-                    Button {
-                        Layout.preferredWidth: 280
-                        Layout.preferredHeight: 150
+                    // Stream Button
+                    Rectangle {
+                        width: parent.width * 0.15
+                        height: parent.height
+                        color: "#242c4d"
+                        border.color: "black"
 
-                        // Define the custom background
-                        background: Rectangle {
-                            id: streamBackground // Unique ID for the Stream button background
-                            color: "#242c4d" // Initial background color
-                            border.color: "black" // Border color
+                        Image {
+                            source: "GUI_Pics/Stream.png"
+                            width: 150
+                            height: 150
+                            anchors.centerIn: parent
                         }
 
-                        // Stack Image and Text on top of each other and center them
-                        contentItem: Item {
+                        Text {
+                            text: "Stream"
+                            font.bold: true
+                            color: "white"
+                            font.pixelSize: Math.max(12, width * 0.2)
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 10
+                        }
+
+                        MouseArea {
                             anchors.fill: parent
-
-                            Image {
-                                source: "GUI_Pics/Stream.png"
-                                width: 150
-                                height: 150
-                                anchors.centerIn: parent
-                            }
-
-                            Text {
-                                id: streamText // Unique ID for the Stream button text
-                                text: "Stream"
-                                color: "white" // Initial text color
-                                font.bold: true
-                                font.pixelSize: 18
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                onEntered: {
-                                    streamBackground.color = "white"; // Change background to white on hover
-                                    streamText.color = "black"; // Change text color to black on hover
-                                }
-                                onExited: {
-                                    streamBackground.color = "#242c4d"; // Revert background color on exit
-                                    streamText.color = "white"; // Revert text color to white on exit
-                                }
-                                onClicked: {
-                                    backend.getDroneAction("stream");
-                                }
-                            }
+                            onEntered: parent.color = "white"
+                            onExited: parent.color = "#242c4d"
+                            onClicked: backend.getDroneAction("stream")
                         }
                     }
 
-                    Button {
-                        Layout.preferredWidth: 280
-                        Layout.preferredHeight: 150
+                    // Right Button
+                    Rectangle {
+                        width: parent.width * 0.15
+                        height: parent.height
+                        color: "#242c4d"
+                        border.color: "black"
 
-                        // Define the custom background
-                        background: Rectangle {
-                            id: rightBackground // Unique ID for the Right button background
-                            color: "#242c4d" // Initial background color
-                            border.color: "black" // Border color
+                        Image {
+                            source: "GUI_Pics/right.png"
+                            width: 150
+                            height: 150
+                            anchors.centerIn: parent
                         }
 
-                        // Stack Image and Text on top of each other and center them
-                        contentItem: Item {
+                        Text {
+                            text: "Right"
+                            font.bold: true
+                            color: "white"
+                            font.pixelSize: Math.max(12, width * 0.2)
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 10
+                        }
+
+                        MouseArea {
                             anchors.fill: parent
-
-                            Image {
-                                source: "GUI_Pics/right.png"
-                                width: 150
-                                height: 150
-                                anchors.centerIn: parent
-                            }
-
-                            Text {
-                                id: rightText // Unique ID for the Right button text
-                                text: "Right"
-                                color: "white" // Initial text color
-                                font.bold: true
-                                font.pixelSize: 18
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                onEntered: {
-                                    rightBackground.color = "white"; // Change background to white on hover
-                                    rightText.color = "black"; // Change text color to black on hover
-                                }
-                                onExited: {
-                                    rightBackground.color = "#242c4d"; // Revert background color on exit
-                                    rightText.color = "white"; // Revert text color to white on exit
-                                }
-                                onClicked: {
-                                    backend.getDroneAction("right");
-                                }
-                            }
+                            onEntered: parent.color = "white"
+                            onExited: parent.color = "#242c4d"
+                            onClicked: backend.getDroneAction("right")
                         }
                     }
 
+                    // Turn Right Button
+                    Rectangle {
+                        width: parent.width * 0.15
+                        height: parent.height
+                        color: "#242c4d"
+                        border.color: "black"
 
-                    Button {
-                        Layout.preferredWidth: 280
-                        Layout.preferredHeight: 150
-
-                        // Define the custom background
-                        background: Rectangle {
-                            id: turnRightBackground // Unique ID for the Turn Right button background
-                            color: "#242c4d" // Initial background color
-                            border.color: "black" // Border color
+                        Image {
+                            source: "GUI_Pics/turnRight.png"
+                            width: 150
+                            height: 150
+                            anchors.centerIn: parent
                         }
 
-                        // Stack Image and Text on top of each other and center them
-                        contentItem: Item {
+                        Text {
+                            text: "Turn Right"
+                            font.bold: true
+                            color: "white"
+                            font.pixelSize: Math.max(12, width * 0.2)
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 10
+                        }
+
+                        MouseArea {
                             anchors.fill: parent
-
-                            Image {
-                                source: "GUI_Pics/turnRight.png"
-                                width: 150
-                                height: 150
-                                anchors.centerIn: parent
-                            }
-
-                            Text {
-                                id: turnRightText // Unique ID for the Turn Right button text
-                                text: "Turn Right"
-                                color: "white" // Initial text color
-                                font.bold: true
-                                font.pixelSize: 18
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                onEntered: {
-                                    turnRightBackground.color = "white"; // Change background to white on hover
-                                    turnRightText.color = "black"; // Change text color to black on hover
-                                }
-                                onExited: {
-                                    turnRightBackground.color = "#242c4d"; // Revert background color on exit
-                                    turnRightText.color = "white"; // Revert text color to white on exit
-                                }
-                                onClicked: {
-                                    backend.getDroneAction("turn_right");
-                                }
-                            }
+                            onEntered: parent.color = "white"
+                            onExited: parent.color = "#242c4d"
+                            onClicked: backend.getDroneAction("turn_right")
                         }
                     }
                 }
 
                 // Back Button
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 150
+                Rectangle {
+                  width: parent.width
+                    height: parent.height * 0.18
+                    anchors.top: parent.top
+                    anchors.topMargin: parent.height * 0.6
+                    color: "transparent"
 
-                    Button {
-                        Layout.preferredWidth: 1400
-                        Layout.preferredHeight: 150
 
-                        // Define the custom background
-                        background: Rectangle {
-                            id: backButtonBackground // Unique ID for the Back button background
-                            color: "#242c4d"    // Initial background color
-                            border.color: "black" // Border color
+                    Rectangle {
+                        width: parent.width
+                        height: parent.height
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        color: "#242c4d"
+                        border.color: "black"
+
+                        Image {
+                            source: "GUI_Pics/back.png"
+                            width: 150
+                            height: 150
+                            anchors.centerIn: parent
                         }
 
-                        // Stack Image and Text on top of each other and center them
-                        contentItem: Item {
+                        Text {
+                            text: "Back"
+                            font.bold: true
+                            color: "white"
+                            font.pixelSize:  parent.width * 0.01
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 10
+                        }
+
+                        MouseArea {
                             anchors.fill: parent
-
-                            Image {
-                                source: "GUI_Pics/back.png"
-                                width: 150
-                                height: 150
-                                anchors.centerIn: parent
-                            }
-
-                            Text {
-                                id: backButtonText // Unique ID for the Back button text
-                                text: "Back"
-                                color: "white" // Initial text color
-                                font.bold: true
-                                font.pixelSize: 18
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                onEntered: {
-                                    backButtonBackground.color = "white"; // Change background to white on hover
-                                    backButtonText.color = "black"; // Change text color to black on hover
-                                }
-                                onExited: {
-                                    backButtonBackground.color = "#242c4d"; // Revert background color on exit
-                                    backButtonText.color = "white"; // Revert text color to white on exit
-                                }
-                                onClicked: {
-                                    backend.getDroneAction("backward"); // Action for the "Back" button
-                                }
-                            }
+                            onEntered: parent.color = "white"
+                            onExited: parent.color = "#242c4d"
+                            onClicked: backend.getDroneAction("backward")
                         }
                     }
                 }
 
-                // Connect, Down, Takeoff, Land
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 150
-                    //Connect
-                    Button {
-                        Layout.preferredWidth: 200
-                        Layout.preferredHeight: 150
+                // Connect, Down, Takeoff, Land Buttons
+                Rectangle {
+                    width: parent.width
+                    height: parent.height * 0.20
+                    anchors.top: parent.top
+                    anchors.topMargin: parent.height * 0.8
+                    color: "transparent"
 
-                        // Define the custom background
-                        background: Rectangle {
-                            id: connectButtonBackground // Unique ID for the Connect button background
-                            color: "#242c4d"    // Initial background color
-                            border.color: "black" // Border color
-                        }
+                    Row {
+                        width: parent.width
+                        height: parent.height
+                        spacing: parent.width * 0.0165 // Add spacing between buttons
 
-                        // Stack Image and Text on top of each other and center them
-                        contentItem: Item {
-                            anchors.fill: parent
+                        // Connect Button
+                        Rectangle {
+                            width: parent.width * 0.15
+                            height: parent.height
+                            color: "#242c4d"
+                            border.color: "black"
 
                             Image {
                                 source: "GUI_Pics/connect.png"
@@ -1189,46 +1130,29 @@ ApplicationWindow {
                             }
 
                             Text {
-                                id: connectButtonText // Unique ID for the Connect button text
                                 text: "Connect"
-                                color: "white" // Initial text color
                                 font.bold: true
-                                font.pixelSize: 18
+                                color: "white"
+                                font.pixelSize: Math.max(12, parent.width * 0.05)
                                 anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.bottom: parent.bottom
+                                anchors.bottomMargin: 10
                             }
 
                             MouseArea {
                                 anchors.fill: parent
-                                onEntered: {
-                                    connectButtonBackground.color = "white"; // Change background to white on hover
-                                    connectButtonText.color = "black"; // Change text color to black on hover
-                                }
-                                onExited: {
-                                    connectButtonBackground.color = "#242c4d"; // Revert background color on exit
-                                    connectButtonText.color = "white"; // Revert text color to white on exit
-                                }
-                                onClicked: {
-                                backend.getDroneAction("connect"); // Action for the "Connect" button
-                                }
+                                onEntered: parent.color = "white"
+                                onExited: parent.color = "#242c4d"
+                                onClicked: backend.getDroneAction("connect")
                             }
                         }
-                    }
 
-                    Button {
-                        Layout.preferredWidth: 800
-                        Layout.preferredHeight: 150
-
-                        // Define the custom background
-                        background: Rectangle {
-                            id: downButtonBackground // Unique ID for the Down button background
-                            color: "#242c4d"    // Initial background color
-                            border.color: "black" // Border color
-                        }
-
-                        // Stack Image and Text on top of each other and center them
-                        contentItem: Item {
-                            anchors.fill: parent
+                        // Down Button
+                        Rectangle {
+                            width: parent.width * 0.5
+                            height: parent.height
+                            color: "#242c4d"
+                            border.color: "black"
 
                             Image {
                                 source: "GUI_Pics/down.png"
@@ -1238,46 +1162,29 @@ ApplicationWindow {
                             }
 
                             Text {
-                                id: downButtonText // Unique ID for the Down button text
                                 text: "Down"
-                                color: "white" // Initial text color
                                 font.bold: true
-                                font.pixelSize: 18
+                                color: "white"
+                                font.pixelSize: Math.max(12, parent.width * 0.01)
                                 anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.bottom: parent.bottom
+                                anchors.bottomMargin: 10
                             }
 
                             MouseArea {
                                 anchors.fill: parent
-                                onEntered: {
-                                    downButtonBackground.color = "white"; // Change background to white on hover
-                                    downButtonText.color = "black"; // Change text color to black on hover
-                                }
-                                onExited: {
-                                    downButtonBackground.color = "#242c4d"; // Revert background color on exit
-                                    downButtonText.color = "white"; // Revert text color to white on exit
-                                }
-                                onClicked: {
-                                    backend.getDroneAction("down"); // Action for the "Down" button
-                                }
+                                onEntered: parent.color = "white"
+                                onExited: parent.color = "#242c4d"
+                                onClicked: backend.getDroneAction("down")
                             }
                         }
-                    }
 
-                    Button {
-                        Layout.preferredWidth: 200
-                        Layout.preferredHeight: 150
-
-                        // Define the custom background
-                        background: Rectangle {
-                            id: takeoffButtonBackground // Unique ID for the Takeoff button background
-                            color: "#242c4d"    // Initial background color
-                            border.color: "black" // Border color
-                        }
-
-                        // Stack Image and Text on top of each other and center them
-                        contentItem: Item {
-                            anchors.fill: parent
+                        // Takeoff Button
+                        Rectangle {
+                            width: parent.width * 0.15
+                            height: parent.height
+                            color: "#242c4d"
+                            border.color: "black"
 
                             Image {
                                 source: "GUI_Pics/takeoff.png"
@@ -1287,44 +1194,29 @@ ApplicationWindow {
                             }
 
                             Text {
-                                id: takeoffButtonText // Unique ID for the Takeoff button text
                                 text: "Takeoff"
-                                color: "white" // Initial text color
                                 font.bold: true
-                                font.pixelSize: 18
+                                color: "white"
+                                font.pixelSize: Math.max(12, parent.width * 0.05)
                                 anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.bottom: parent.bottom
+                                anchors.bottomMargin: 10
                             }
 
                             MouseArea {
                                 anchors.fill: parent
-                                onEntered: {
-                                    takeoffButtonBackground.color = "white"; // Change background to white on hover
-                                    takeoffButtonText.color = "black"; // Change text color to black on hover
-                                }
-                                onExited: {
-                                    takeoffButtonBackground.color = "#242c4d"; // Revert background color on exit
-                                    takeoffButtonText.color = "white"; // Revert text color to white on exit
-                                }
+                                onEntered: parent.color = "white"
+                                onExited: parent.color = "#242c4d"
                                 onClicked: backend.getDroneAction("takeoff")
                             }
                         }
-                    }
 
-                    Button {
-                        Layout.preferredWidth: 200
-                        Layout.preferredHeight: 150
-
-                        // Define the custom background
-                        background: Rectangle {
-                            id: landButtonBackground // Unique ID for the Land button background
-                            color: "#242c4d"    // Initial background color
-                            border.color: "black" // Border color
-                        }
-
-                        // Stack Image and Text on top of each other and center them
-                        contentItem: Item {
-                            anchors.fill: parent
+                        // Land Button
+                        Rectangle {
+                            width: parent.width * 0.15
+                            height: parent.height
+                            color: "#242c4d"
+                            border.color: "black"
 
                             Image {
                                 source: "GUI_Pics/land.png"
@@ -1334,42 +1226,32 @@ ApplicationWindow {
                             }
 
                             Text {
-                                id: landButtonText // Unique ID for the Land button text
                                 text: "Land"
-                                color: "white" // Initial text color
                                 font.bold: true
-                                font.pixelSize: 18
+                                color: "white"
+                                font.pixelSize: Math.max(12, parent.width * 0.05)
                                 anchors.horizontalCenter: parent.horizontalCenter
-                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.bottom: parent.bottom
+                                anchors.bottomMargin: 10
                             }
 
                             MouseArea {
                                 anchors.fill: parent
-                                onEntered: {
-                                    landButtonBackground.color = "white"; // Change background to white on hover
-                                    landButtonText.color = "black"; // Change text color to black on hover
-                                }
-                                onExited: {
-                                    landButtonBackground.color = "#242c4d"; // Revert background color on exit
-                                    landButtonText.color = "white"; // Revert text color to white on exit
-                                }
-                                onClicked: {
-                                    backend.getDroneAction("land"); // Action for the "Land" button
-                                }
+                                onEntered: parent.color = "white"
+                                onExited: parent.color = "#242c4d"
+                                onClicked: backend.getDroneAction("land")
                             }
                         }
                     }
                 }
-            }
-            function getDroneAction(action) {
+                }
+                  function getDroneAction(action) {
                 //logModel.append({ action: action + " button pressed" })
                 // Here you would implement the actual drone control logic
                 console.log(action + " triggered.")
             }
-        }
-
-            //File shuffler view 
-            //File shuffler view 
+            }
+            //File shuffler view
             Rectangle {
                 id: fileShufflerView
                 color: "#2b3a4a"
@@ -1428,6 +1310,16 @@ ApplicationWindow {
                             onClicked: {
                                 unifyThoughts.open()
                                 fileShufflerView.outputBoxText = `Running Thoughts Unifier...\n`;
+                                fileShufflerView.unifiedThoughts = false;
+
+                            }
+                        }
+
+                        Button {
+                            text: "Remove 8 Channel Data"
+                            onClicked: {
+                                remove8channelDialog.open()
+                                fileShufflerView.outputBoxText = `Running 8 Channel Data Remover...\n`;
                                 fileShufflerView.unifiedThoughts = false;
 
                             }
@@ -1502,6 +1394,25 @@ ApplicationWindow {
                         var outputt = fileShufflerGui.unify_thoughts(unifyThoughts.folder);
                         fileShufflerView.outputBoxText += outputt;
                         fileShufflerView.outputBoxText += "\nThoughts Unified!\n"
+                    }
+
+                    onRejected: {
+                        console.log("Folder dialog canceled")
+                    }
+                }
+
+                FolderDialog {
+                    id: remove8channelDialog
+                    folder: "file:///"  // Or "." for current working directory
+
+                    onAccepted: {
+                        console.log("Selected folder:", remove8channelDialog.folder)
+                        fileShufflerGui.outputBoxText = "Running 8 Channel Data Remover...\n"
+                        var output = fileShufflerGui.remove_8_channel(remove8channelDialog.folder)
+                        fileShufflerView.outputBoxText += output;
+                        fileShufflerView.unifiedThoughts = false
+                        fileShufflerView.ranShuffle = false
+                        fileShufflerView.outputBoxText += "\n8 Channel Data Files Removed!\n"
 
                     }
 
@@ -1509,6 +1420,7 @@ ApplicationWindow {
                         console.log("Folder dialog canceled")
                     }
                 }
+                
             }
             // Transfer Data view
             Rectangle {
@@ -1609,7 +1521,7 @@ ApplicationWindow {
                     }
                 }
             }
-            
+
             // Manual Controller Tab (Nao Viewer)
             Rectangle {
                 color: "#64778d"

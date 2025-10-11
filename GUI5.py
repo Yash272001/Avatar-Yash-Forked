@@ -8,12 +8,27 @@ from PySide6.QtCore import QObject, Signal, Slot, QProcess, QUrl
 from pdf2image import convert_from_path
 from djitellopy import Tello
 import random
+import re
 import pandas as pd
 import time
 import io
 import urllib.parse
 import contextlib
+from collections import defaultdict
 from brainflow.board_shim import BoardShim, BrainFlowInputParams, BoardIds
+from GUI5_ManualDroneControl.cameraview.camera_controller import CameraController
+# from Developers.hofCharts import main as hofCharts, ticketsByDev_text
+
+from Developers import devCharts
+
+# Import BCI connection for brainwave prediction
+try:
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), 'random-forest-prediction')))
+    from client.brainflow1 import bciConnection, DataMode
+    BCI_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: BCI connection not available: {e}")
+    BCI_AVAILABLE = False
 
 # Add the parent directory to the Python path for file-shuffler
 sys.path.append(str(Path(__file__).resolve().parent / "file-shuffler"))
@@ -21,42 +36,13 @@ sys.path.append(str(Path(__file__).resolve().parent / "file-unify-labels"))
 sys.path.append(str(Path(__file__).resolve().parent / "file-remove8channel"))
 import unifyTXT
 import run_file_shuffler
-import file_remover
+import remove8channel
 
 
 class TabController(QObject):
     def __init__(self):
         super().__init__()
         self.nao_process = None
-
-    @Slot()
-    def startNaoViewer(self):
-        print("Starting Nao Viewer method called")
-        # Check if we already have a process running
-        if self.nao_process is not None and self.nao_process.state() == QProcess.Running:
-            print("Nao Viewer is already running")
-            return
-
-        # Create a new process
-        self.nao_process = QProcess()
-
-        # Connect signals to handle process output
-        self.nao_process.readyReadStandardOutput.connect(
-            lambda: print("Output:", self.nao_process.readAllStandardOutput().data().decode()))
-        self.nao_process.readyReadStandardError.connect(
-            lambda: print("Error:", self.nao_process.readAllStandardError().data().decode()))
-
-        # Start the process
-        script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "NA06_Manual_Control/Nao6Viewer.py")
-        print(f"Starting Nao Viewer from: {script_path}")
-        self.nao_process.start(sys.executable, [script_path])
-
-    @Slot()
-    def stopNaoViewer(self):
-        print("Stop Nao Viewer method called")
-        if self.nao_process is not None and self.nao_process.state() == QProcess.Running:
-            self.nao_process.terminate()
-            print("Nao Viewer stopped")
 
 
 class BrainwavesBackend(QObject):
@@ -65,12 +51,128 @@ class BrainwavesBackend(QObject):
     predictionsTableUpdated = Signal(list)
     imagesReady = Signal(list)
     logMessage = Signal(str)
+    naoStarted = Signal()
+    naoEnded = Signal()
+
+    @Slot()
+    def startNaoManual(self):
+        print("Nao6 Manual session started")
+        self.naoStarted.emit("Nao6 Manual session started")
+
+    @Slot()
+    def stopNaoManual(self):
+        print("Nao6 Manual session ended")
+        self.naoEnded.emit("Nao6 Manual session ended")
+
+    @Slot()
+    def connectNao(self):
+        # Mock function to simulate drone connection
+        self.flight_log.insert(0, "Nao connected.")
+        self.flightLogUpdated.emit(self.flight_log)
+
+    @Slot(result=str)
+    def getDevList(self):
+        exclude = {
+            "3C Cloud Computing Club <114175379+3C-SCSU@users.noreply.github.com>",
+        }
+
+        proc = subprocess.run(
+            ["git", "shortlog", "-sne", "--all"],
+            capture_output=True, text=True, encoding="utf-8", errors="ignore"
+        )
+
+        if proc.returncode != 0:
+            return "No developers found."
+
+        lines = proc.stdout.strip().splitlines()
+        filtered_lines = []
+
+        for line in lines:
+            # Match the author portion
+            match = re.match(r"^\s*\d+\s+(?P<author>.+)$", line)
+            if match:
+                author = match.group("author").strip()
+                if author not in exclude:
+                    filtered_lines.append(line)
+
+        return "\n".join(filtered_lines) if filtered_lines else "No developers found."
+
+    @Slot(result=str)
+    def getTicketsByDev(self) -> str:
+
+            exclude = {
+                "3C Cloud Computing Club <114175379+3C-SCSU@users.noreply.github.com>"
+            }
+
+            pretty = "%x1e%an <%ae>%x1f%s%x1f%b"
+            try:
+                proc = subprocess.run(
+                    ["git", "log", "--all", f"--pretty=format:{pretty}"],
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="ignore",
+                    check=True
+                )
+            except subprocess.CalledProcessError:
+                return "No tickets found."
+
+            raw = proc.stdout or ""
+            commits = raw.split("\x1e")
+
+            jira_re = re.compile(r'\b([A-Za-z]{2,}-\d+)\b')
+            hash_re = re.compile(r'(?<![A-Za-z0-9])#\d+\b')
+            author_to_ticketset = defaultdict(set)
+
+            for entry in commits:
+                entry = entry.strip()
+                if not entry:
+                    continue
+                parts = entry.split("\x1f", 2)
+                author = parts[0].strip()
+                subject = parts[1] if len(parts) > 1 else ""
+                body = parts[2] if len(parts) > 2 else ""
+                msg = (subject + "\n" + body).strip()
+
+                found = set()
+                for m in jira_re.findall(msg):
+                    found.add(m.upper())
+                for m in hash_re.findall(msg):
+                    found.add(m)
+
+                if found:
+                    author_to_ticketset[author].update(found)
+
+            if not author_to_ticketset:
+                return "No tickets found."
+
+            # Sort authors by ticket count descending, then by name
+            lines = []
+            for author, tickets in sorted(author_to_ticketset.items(), key=lambda kv: (-len(kv[1]), kv[0].lower())):
+                if author in exclude:
+                    continue  # skip excluded authors entirely
+                lines.append(f"{author}: {', '.join(sorted(tickets))}")
+
+
+            return "\n".join(lines)
+
+    @Slot()
+    def devChart(self):
+        print("hofChart() SLOT CALLED")
+        try:
+            devCharts.main()
+            print("hofCharts.main() COMPLETED")
+        except Exception as e:
+            print(f"hofCharts.main() ERROR: {e}")
+
 
     def __init__(self):
         super().__init__()
         self.flight_log = []  # List to store flight log entries
         self.predictions_log = []  # List to store prediction records
         self.current_prediction_label = ""
+        self.current_model = "Random Forest"  # Default model
+        self.current_framework = "PyTorch"  # Default framework
         self.image_paths = []  # Store converted image paths
         self.plots_dir = os.path.abspath("plotscode/plots")  # Base plots directory
         self.current_dataset = "refresh"  # Default dataset to display
@@ -79,23 +181,53 @@ class BrainwavesBackend(QObject):
         except Exception as e:
             print(f"Warning: Failed to initialize Tello drone: {e}")
             self.logMessage.emit(f"Warning: Failed to initialize Tello drone: {e}")
+        
+        # Initialize camera controller with tello instance
+        self.camera_controller = CameraController()
+        if hasattr(self, 'tello'):
+            self.camera_controller.set_tello_instance(self.tello)
+
+        # Initialize BCI connection for brainwave prediction
+        if BCI_AVAILABLE:
+            try:
+                self.bcicon = bciConnection.get_instance()
+                print("BCI connection initialized successfully")
+            except Exception as e:
+                print(f"Warning: Failed to initialize BCI connection: {e}")
+                self.bcicon = None
+        else:
+            self.bcicon = None
 
     @Slot(str)
     def selectModel(self, model_name):
         """ Select the machine learning model """
-        print(f"Model selected: {model_name}")
+        self.logMessage.emit(f"Model selected: {model_name}")
         self.current_model = model_name
         self.flight_log.insert(0, f"Selected Model: {model_name}")
+        self.flightLogUpdated.emit(self.flight_log)
+
+    @Slot(str)
+    def selectFramework(self, framework_name):
+        """ Select the machine learning framework """
+        self.logMessage.emit(f"Framework selected: {framework_name}")
+        self.current_framework = framework_name
+        self.flight_log.insert(0, f"Selected Framework: {framework_name}")
         self.flightLogUpdated.emit(self.flight_log)
 
     @Slot()
     def readMyMind(self):
         """ Runs the selected model and processes the brainwave data. """
         if self.current_model == "Random Forest":
-            prediction = self.run_random_forest()
-        else:
-            prediction = self.run_deep_learning()
-
+            if self.current_framework == "PyTorch":
+                prediction = self.run_random_forest_pytorch()
+            else:
+                prediction = self.run_random_forest_tensorflow()
+        else:  # Deep Learning
+            if self.current_framework == "PyTorch":
+                prediction = self.run_deep_learning_pytorch()
+            else:
+                prediction = self.run_deep_learning_tensorflow()
+        self.logMessage.emit(f"Prediction received: {prediction}")
         # Set current prediction
         self.current_prediction_label = prediction
 
@@ -108,20 +240,64 @@ class BrainwavesBackend(QObject):
         self.predictionsTableUpdated.emit(self.predictions_log)
 
         # Update Flight Log
-        self.flight_log.insert(0, f"Executed: {prediction} (Model: {self.current_model})")
+        self.flight_log.insert(0, f"Executed: {prediction} (Model: {self.current_model}, Framework: {self.current_framework})")
         self.flightLogUpdated.emit(self.flight_log)
 
-    def run_random_forest(self):
-        """ Simulated Random Forest model processing """
-        print("Running Random Forest Model...")
-        time.sleep(1)  # Simulate processing delay
-        return random.choice(["Move Forward", "Turn Left", "Turn Right", "Land"])
+    def run_random_forest_pytorch(self):
+        """ Random Forest model processing with PyTorch backend """
+        print("Running Random Forest Model with PyTorch...")
+        try:
+            # Use the BCI connection to get real brainwave data
+            if hasattr(self, 'bcicon') and self.bcicon:
+                prediction_response = self.bcicon.bciConnectionController()
+                if prediction_response:
+                    return prediction_response.get('prediction_label', 'forward')
+        except Exception as e:
+            print(f"Error with PyTorch Random Forest: {e}")
 
-    def run_deep_learning(self):
-        """ Simulated Deep Learning model processing """
-        print("Running Deep Learning Model...")
-        time.sleep(2)  # Simulate slightly longer DL processing time
-        return random.choice(["Move Forward", "Turn Left", "Turn Right", "Land", "Hover"])
+        # Fallback to simulation with PyTorch-specific labels
+        time.sleep(1)
+        return random.choice(["forward", "backward", "left", "right", "takeoff", "land"])
+
+    def run_random_forest_tensorflow(self):
+        """ Random Forest model processing with TensorFlow backend """
+        print("Running Random Forest Model with TensorFlow...")
+        try:
+            # Use the BCI connection to get real brainwave data
+            if hasattr(self, 'bcicon') and self.bcicon:
+                prediction_response = self.bcicon.bciConnectionController()
+                if prediction_response:
+                    return prediction_response.get('prediction_label', 'forward')
+        except Exception as e:
+            print(f"Error with TensorFlow Random Forest: {e}")
+
+        # Fallback to simulation with TensorFlow-specific labels
+        time.sleep(1)
+        return random.choice(["forward", "backward", "left", "right", "takeoff", "land"])
+
+    def run_deep_learning_pytorch(self):
+        """ Deep Learning model processing with PyTorch backend """
+        print("Running Deep Learning Model with PyTorch...")
+        try:
+            # Simulate PyTorch deep learning model processing
+            # In a real implementation, this would load and run a PyTorch CNN model
+            time.sleep(2)  # Simulate longer processing time for deep learning
+            return random.choice(["forward", "backward", "left", "right", "takeoff", "land", "up", "down"])
+        except Exception as e:
+            print(f"Error with PyTorch Deep Learning: {e}")
+            return "forward"
+
+    def run_deep_learning_tensorflow(self):
+        """ Deep Learning model processing with TensorFlow backend """
+        print("Running Deep Learning Model with TensorFlow...")
+        try:
+            # Simulate TensorFlow deep learning model processing
+            # In a real implementation, this would load and run a TensorFlow CNN model
+            time.sleep(2)  # Simulate longer processing time for deep learning
+            return random.choice(["forward", "backward", "left", "right", "takeoff", "land", "up", "down"])
+        except Exception as e:
+            print(f"Error with TensorFlow Deep Learning: {e}")
+            return "forward"
 
     @Slot(str)
     def notWhatIWasThinking(self, manual_action):
@@ -136,6 +312,7 @@ class BrainwavesBackend(QObject):
         # Also update flight log
         self.flight_log.insert(0, f"Manual Action: {manual_action}")
         self.flightLogUpdated.emit(self.flight_log)
+        self.logMessage.emit(f"Manual input: {manual_action}") 
 
     @Slot()
     def executeAction(self):
@@ -143,12 +320,14 @@ class BrainwavesBackend(QObject):
         if self.current_prediction_label:
             self.flight_log.insert(0, f"Executed: {self.current_prediction_label}")
             self.flightLogUpdated.emit(self.flight_log)
+            self.logMessage.emit(f"Executed action: {self.current_prediction_label}")
 
     @Slot()
     def connectDrone(self):
         # Mock function to simulate drone connection
         self.flight_log.insert(0, "Drone connected.")
         self.flightLogUpdated.emit(self.flight_log)
+        self.logMessage.emit("Drone connected.")
 
     @Slot()
     def keepDroneAlive(self):
@@ -194,6 +373,12 @@ class BrainwavesBackend(QObject):
                 self.logMessage.emit("Landing")
             elif action == 'go_home':
                 self.go_home()
+            elif action == 'stream':
+                if hasattr(self, 'camera_controller'):
+                    self.camera_controller.start_camera_stream()
+                    self.logMessage.emit("Starting camera stream")
+                else:
+                    self.logMessage.emit("Camera controller not available")
             else:
                 self.logMessage.emit("Unknown action")
         except Exception as e:
@@ -426,10 +611,10 @@ class BrainwavesBackend(QObject):
         """
         if mode == "synthetic":
             self.init_synthetic_board()
-            print("Switched to Synthetic Data Mode")
+            self.logMessage.emit("Switched to Synthetic Data Mode")
         elif mode == "live":
             self.init_live_board()
-            print("Switched to Live Data Mode")
+            self.logMessage.emit("Switched to Live Data Mode")
         else:
             print(f"Unknown data mode: {mode}")
 
@@ -447,6 +632,8 @@ class BrainwavesBackend(QObject):
         print("\nLive headset board initialized.")
 
 
+
+
 if __name__ == "__main__":
     os.environ["QT_QUICK_CONTROLS_STYLE"] = "Fusion"
     app = QApplication(sys.argv)
@@ -462,6 +649,7 @@ if __name__ == "__main__":
     engine.rootContext().setContextProperty("backend", backend)
     engine.rootContext().setContextProperty("imageModel", [])  # Initialize empty model
     engine.rootContext().setContextProperty("fileShufflerGui", backend)  # For file shuffler
+    engine.rootContext().setContextProperty("cameraController", backend.camera_controller)
     print("Controllers exposed to QML")
     engine.rootContext().setContextProperty("fileShufflerGui", backend)  # For file shuffler
 
@@ -478,7 +666,8 @@ if __name__ == "__main__":
     # Ensure image model updates correctly
     backend.imagesReady.connect(lambda images: engine.rootContext().setContextProperty("imageModel", images))
 
-    # Clean up when exiting
-    app.aboutToQuit.connect(TabController.stopNaoViewer)
-
     sys.exit(app.exec())
+
+
+
+

@@ -48,13 +48,13 @@
     <a href="https://github.com/3C-SCSU/Avatar/tree/main/BCI"><strong>BCI News »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/3C-SCSU/Avatar"><strong>Explore the docs »</strong></a>
+    <a href="https://www.youtube.com/@3CSCSU"><strong>Videos »</strong></a>
     <br />
     <br />
     <a href="https://github.com/3C-SCSU/Avatar/wiki"><strong>Get help in the Wiki »</strong></a>
     <br />
     <br />
-<a href="https://github.com/3C-SCSU/Avatar">View Demo</a>
+<a href="https://www.youtube.com/@3CSCSU">View Demo</a>
     ·
     <a href="https://github.com/3C-SCSU/Avatar/issues">Report Bug</a>
     ·

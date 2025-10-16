@@ -17,9 +17,12 @@ import contextlib
 from collections import defaultdict
 from brainflow.board_shim import BoardShim, BrainFlowInputParams, BoardIds
 from GUI5_ManualDroneControl.cameraview.camera_controller import CameraController
+from NAO6.nao_connection import send_command
 # from Developers.hofCharts import main as hofCharts, ticketsByDev_text
 
 from Developers import devCharts
+
+								
 
 # Import BCI connection for brainwave prediction
 try:
@@ -66,9 +69,31 @@ class BrainwavesBackend(QObject):
 
     @Slot()
     def connectNao(self):
+        if send_command("connect"):
         # Mock function to simulate drone connection
-        self.flight_log.insert(0, "Nao connected.")
+            self.flight_log.insert(0, "Nao connected.")
+        else:
+            self.flight_log.insert(0, "Nao failed to connect.")
         self.flightLogUpdated.emit(self.flight_log)
+    
+    @Slot()
+    def nao_sit_down(self):
+        if send_command("sit_down"):
+            self.flight_log.insert(0, "Sitting down.")
+        else:
+            self.flight_log.insert(0, "Nao failed to sit.")
+        self.flightLogUpdated.emit(self.flight_log)
+    
+    @Slot()
+    def nao_stand_up(self):
+        if send_command("stand_up"):
+            self.flight_log.insert(0, "Standing Up.")
+        else:
+            self.fligt_log.insert(0, "Nao failed to stand up.")
+        self.flightLogUpdated.emit(self.flight_log)
+
+
+            
 
     @Slot(result=str)
     def getDevList(self):
@@ -655,6 +680,7 @@ if __name__ == "__main__":
 
     # Load QML
     qml_file = Path(__file__).resolve().parent / "main.qml"
+
     engine.load(str(qml_file))
 
     # Convert PDFs after engine load
